@@ -8,7 +8,9 @@ const crypto = require("crypto");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const chat = require("./io");
+const MongoStore = require("connect-mongo");
 const CLIENT_URL = process.env.CLIENT_URL;
+const MONGO_URL = process.env.MONGO_URL;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -42,17 +44,24 @@ app.use(
       secure: true,
       sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24,
+      path: "/",
     },
     resave: true,
     saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: MONGO_URL,
+      ttl: 1000 * 60 * 60 * 24,
+      autoRemove: "native",
+    }),
   })
 );
 
 app.get("/login", (req, res) => {
   req.session.user = {
+    id: req.session.id,
     preferences: [],
   };
-  res.status(200).end();
+  res.status(200).json({ id: req.sessionID });
 });
 app.post("/save-preferences", (req, res) => {
   const { preferences } = req.body;
