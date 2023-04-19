@@ -17,6 +17,7 @@
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "axios": "^1.2.2",
+    "dotenv": "^16.0.3",
     "express-rate-limit": "^6.7.0",
     "fastpriorityqueue": "^0.7.4",
     "formik": "^2.2.9",

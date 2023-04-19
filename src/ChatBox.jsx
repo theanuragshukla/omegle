@@ -11,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const io = require("socket.io-client");
-
+const SERVER = process.env.REACT_APP_SERVER_URL;
 const ChatBox = () => {
   const navigate = useNavigate();
   const [uid, setUid] = useState();
@@ -25,7 +25,7 @@ const ChatBox = () => {
   };
 
   useEffect(() => {
-    fetch("http://localhost:5000/give-me-id", {
+    fetch(`${SERVER}/give-me-id`, {
       method: "GET",
       credentials: "include",
     })
@@ -33,7 +33,7 @@ const ChatBox = () => {
       .then((res) => {
         if (res.status) {
           setUid(res.uid);
-          setSocket(io("http://localhost:5000", { query: `uid=${res.uid}` }));
+          setSocket(io(SERVER, { query: `uid=${res.uid}` }));
         } else {
           navigate("/");
         }
