@@ -1,110 +1,59 @@
-const redis = require("redis");
-const { promisify } = require("util");
-
-const redisClient = redis.createClient();
-
-// Promisify Redis methods
-const saddAsync = promisify(redisClient.sadd).bind(redisClient);
-const sismemberAsync = promisify(redisClient.sismember).bind(redisClient);
-const srandmemberAsync = promisify(redisClient.srandmember).bind(redisClient);
-const delAsync = promisify(redisClient.del).bind(redisClient);
-
-// Rate limiting settings
-const RATE_LIMIT_WINDOW = 30 * 1000; // 30 seconds
-const RATE_LIMIT_COUNT = 10;
-
-// Store active sockets and their corresponding partner's socket id
-const activeSockets = new Map();
-
 module.exports = (io) => {
+  //const redisAdapter = require("socket.io-redis");
+  const PriorityQueue = require("fastpriorityqueue");
+
+  const unpaired = new PriorityQueue((a, b) => a.timestamp < b.timestamp);
+
+  //io.adapter(redisAdapter({ host: "localhost", port: 6379 }));
+
   io.on("connection", (socket) => {
-    console.log(`User ${socket.id} connected`);
+    const uid = socket.handshake.query.uid;
+    socket.uid = uid;
+    socket.partner = null;
+    console.log("socket connected: ", socket.uid);
 
-    // Store the socket id in Redis
-    saddAsync("active_sockets", socket.id);
-
-    socket.on("disconnect", async () => {
-      console.log(`User ${socket.id} disconnected`);
-
-      // Remove the socket from the activeSockets map and Redis
-      activeSockets.delete(socket.id);
-      await delAsync(socket.id);
-      await saddAsync("inactive_sockets", socket.id);
-
-      // Notify the partner that their partner has disconnected
-      const partnerSocketId = activeSockets.get(socket.id);
-      if (partnerSocketId) {
-        const partnerSocket = io.sockets.sockets.get(partnerSocketId);
-        if (partnerSocket) {
-          partnerSocket.emit("partner_disconnected");
-        }
-        activeSockets.delete(partnerSocketId);
-        await delAsync(partnerSocketId);
-        await saddAsync("inactive_sockets", partnerSocketId);
+    socket.on("pair", () => {
+      if (socket.data.connected && socket.partner) {
+        socket.partner.emit("partner-skipped");
+        socket.partner.data.connected = false;
+        socket.partner.partner = null;
+        socket.partner = null;
       }
+      const partner = unpaired.poll();
+      if (!partner || partner.uid === socket.uid) {
+        socket.timestamp = Date.now();
+        unpaired.add(socket);
+        socket.emit("enqueue");
+        return;
+      }
+      unpaired.remove(socket);
+      socket.data.connected = true;
+      partner.data.connected = true;
+      socket.partner = partner;
+      partner.partner = socket;
+      socket.emit("paired");
+      partner.emit("paired");
     });
 
-    socket.on("pair", async () => {
-      // Check if the user is already paired with someone
-      if (activeSockets.has(socket.id)) {
+    socket.on("msg", (msg) => {
+      if (!socket.data.connected || !socket.partner) {
+        socket.emit("newMsg", {
+          sender: "system",
+          msg: "You are not connected to Anyone",
+        });
         return;
-      }
-
-      // Implement rate limiting
-      const timestamp = Date.now();
-      const key = `rate_limit_${socket.id}`;
-      const count = await saddAsync(key, timestamp);
-      await redisClient.expire(key, RATE_LIMIT_WINDOW / 1000);
-      if (count > RATE_LIMIT_COUNT) {
-        socket.emit("rate_limit_exceeded");
-        return;
-      }
-
-      // Find a random partner
-      let partnerSocketId;
-      do {
-        partnerSocketId = await srandmemberAsync("active_sockets");
-      } while (
-        partnerSocketId === socket.id ||
-        activeSockets.has(partnerSocketId)
-      );
-
-      // Pair the two users
-      activeSockets.set(socket.id, partnerSocketId);
-      activeSockets.set(partnerSocketId, socket.id);
-      await saddAsync(socket.id, partnerSocketId);
-      await saddAsync(partnerSocketId, socket.id);
-
-      // Notify the users that they are paired
-      socket.emit("paired", partnerSocketId);
-      const partnerSocket = io.sockets.sockets.get(partnerSocketId);
-      if (partnerSocket) {
-        partnerSocket.emit("paired", socket.id);
+      } else {
+        socket.partner.emit("newMsg", msg);
       }
     });
-
-    socket.on("skip", async () => {
-      // Check if the user is paired with someone
-      const partnerSocketId = activeSockets.get(socket.id);
-      if (!partnerSocketId) {
-        return;
+    socket.on("disconnect", () => {
+      console.log("socket disconnected:", socket.uid);
+      if (!socket.data.connected) {
+        unpaired.remove(socket);
+      } else {
+        socket.partner.emit("partner-skipped");
+        socket.partner.data.connected = false;
       }
-      console.log("partner", partnerSocketId);
-      // Remove the current pairing
-      activeSockets.delete(socket.id);
-      activeSockets.delete(partnerSocketId);
-      await delAsync(socket.id);
-      await delAsync(partnerSocketId);
-
-      // Notify the users that the pairing has been skipped
-      socket.emit("partner_skipped");
-      const partnerSocket = io.sockets.sockets.get(partnerSocketId);
-      if (partnerSocket) {
-        partnerSocket.emit("partner_skipped");
-      }
-
-      // Pair the user with a new partner
-      socket.emit("pair");
     });
   });
 };

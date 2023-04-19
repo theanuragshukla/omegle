@@ -45,34 +45,30 @@ const ChatBox = () => {
     if (!socket) return;
     socket.on("connect", () => {
       console.log("Connected to server");
+      socket.emit("pair");
     });
 
     socket.on("disconnect", () => {
       console.log("Disconnected from server");
     });
 
-    socket.on("paired", (partnerId) => {
-      console.log(`Paired with ${partnerId}`);
-      setMessages([
-        { sender: "System", msg: "Stranger Connected:" + partnerId },
-      ]);
+    socket.on("paired", () => {
+      console.log(`Paired`);
+      setMessages([{ sender: "System", msg: "Stranger connected" }]);
     });
 
-    socket.on("partner_disconnected", () => {
-      console.log("Partner disconnected");
-      addMessage("System", "Stranger Disconnected");
+    socket.on("partner-skipped", () => {
+      console.log("Partner Skipped");
+      addMessage("System", "Stranger Skipped you");
     });
 
-    socket.on("partner_skipped", () => {
-      console.log("Partner skipped");
-      addMessage("System", "Stranger Disconnected");
+    socket.on("newMsg", (msg) => {
+      addMessage("Stranger", msg);
     });
 
-    socket.on("rate_limit_exceeded", () => {
-      console.log("Rate limit exceeded");
-      addMessage("System", "too much requests");
+    socket.on("enqueue", () => {
+      addMessage("system", "waiting for partner to join");
     });
-
     return () => {
       // Disconnect from the server
       socket.disconnect();
@@ -112,7 +108,7 @@ const ChatBox = () => {
       </GridItem>{" "}
       <GridItem>
         <Flex px={4} py={2} gap={2}>
-          <Button onClick={() => socket.emit("skip")} colorScheme="blue">
+          <Button onClick={() => socket.emit("pair")} colorScheme="blue">
             Skip
           </Button>
 
