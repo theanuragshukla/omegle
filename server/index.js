@@ -6,32 +6,14 @@ const http = require("http").Server(app);
 const sessions = require("express-session");
 const crypto = require("crypto");
 const cookieParser = require("cookie-parser");
-const cors = require("cors");
 const chat = require("./io");
 const MongoStore = require("connect-mongo");
-const CLIENT_URL = process.env.CLIENT_URL;
 const MONGO_URL = process.env.MONGO_URL;
+const path = require("path");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: CLIENT_URL,
-    methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
-    credentials: true,
-  })
-);
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", CLIENT_URL);
-  res.header("Access-Control-Allow-Credentials", true);
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
-
 app.use(
   sessions({
     name: "omegleSecretEdition",
@@ -41,26 +23,34 @@ app.use(
     secret: "lorem",
     cookie: {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: 1000 * 60 * 60,
       path: "/",
     },
     resave: true,
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: MONGO_URL,
-      ttl: 1000 * 60 * 60 * 24,
+      ttl: 1000 * 60 * 60,
       autoRemove: "native",
     }),
   })
 );
+
+const buildPath = path.normalize(path.join(__dirname, "../build"));
+app.use(express.static(buildPath));
 
 app.get("/login", (req, res) => {
   req.session.user = {
     id: req.session.id,
     preferences: [],
   };
+  res.cookie("test", "test", {
+    sameSite: "none",
+    httpOnly: true,
+    secure: true,
+    maxAge: 3600 * 240 * 1000,
+    path: "/",
+  });
   res.status(200).json({ id: req.sessionID });
 });
 app.post("/save-preferences", (req, res) => {
@@ -77,6 +67,9 @@ app.get("/give-me-id", (req, res) => {
   } else {
     res.json({ status: false });
   }
+});
+app.get("(/*)?", async (req, res, next) => {
+  res.sendFile(path.join(buildPath, "index.html"));
 });
 const server = http.listen(port, () => {
   console.log(`running on port ${port}`);

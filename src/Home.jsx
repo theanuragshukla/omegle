@@ -17,7 +17,7 @@ const SERVER = process.env.REACT_APP_SERVER_URL;
 function Home() {
   const navigate = useNavigate();
   useEffect(() => {
-    fetch(`${SERVER}/login`, {
+    fetch(`/login`, {
       credentials: "include",
       method: "GET",
     });
@@ -26,7 +26,7 @@ function Home() {
   const [prefs, setPrefs] = useState([]);
 
   const redirect = (to) => {
-    fetch(`${SERVER}/save-preferences`, {
+    fetch(`/save-preferences`, {
       method: "POST",
       credentials: "include",
       body: JSON.stringify({ preferences: prefs }),

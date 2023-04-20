@@ -25,7 +25,7 @@ const ChatBox = () => {
   };
 
   useEffect(() => {
-    fetch(`${SERVER}/give-me-id`, {
+    fetch(`/give-me-id`, {
       method: "GET",
       credentials: "include",
     })
@@ -33,7 +33,7 @@ const ChatBox = () => {
       .then((res) => {
         if (res.status) {
           setUid(res.uid);
-          setSocket(io(SERVER, { query: `uid=${res.uid}` }));
+          setSocket(io("/", { query: `uid=${res.uid}` }));
         } else {
           navigate("/");
         }
