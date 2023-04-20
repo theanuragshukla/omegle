@@ -1,0 +1,69 @@
+{
+  "name": "omegle",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Anurag Shukla",
+  "scripts": {
+    "start": "react-scripts start",
+    "lint": "eslint --ext .js --ext .jsx .",
+    "build": "react-scripts build"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.4.9",
+    "@contentful/rich-text-react-renderer": "^15.16.2",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "axios": "^1.2.2",
+    "dotenv": "^16.0.3",
+    "express-rate-limit": "^6.7.0",
+    "fastpriorityqueue": "^0.7.4",
+    "formik": "^2.2.9",
+    "framer-motion": "^6.5.1",
+    "prop-types": "^15.8.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^3.11.0",
+    "react-redux": "^8.0.5",
+    "react-router-dom": "^6.7.0",
+    "react-scripts": "5.0.1",
+    "redux": "^4.2.0",
+    "sass": "^1.57.1",
+    "socket.io-client": "^4.6.1",
+    "socket.io-redis": "^6.1.1",
+    "swr": "^2.0.0",
+    "typeface-poppins": "^1.1.13",
+    "uuid": "^9.0.0",
+    "yup": "^0.32.11"
+  },
+  "devDependencies": {
+    "eslint": "^8.32.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.0",
+    "prettier": "^2.8.3"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

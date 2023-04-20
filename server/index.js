@@ -36,7 +36,7 @@ app.use(
   })
 );
 
-const buildPath = path.normalize(path.join(__dirname, "../build"));
+const buildPath = path.normalize(path.join(__dirname, "./client/build"));
 app.use(express.static(buildPath));
 
 app.get("/login", (req, res) => {
