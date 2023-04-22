@@ -22,6 +22,7 @@
     "fastpriorityqueue": "^0.7.4",
     "formik": "^2.2.9",
     "framer-motion": "^6.5.1",
+    "peerjs": "^1.4.7",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

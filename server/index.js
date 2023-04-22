@@ -10,6 +10,17 @@ const chat = require("./io");
 const MongoStore = require("connect-mongo");
 const MONGO_URL = process.env.MONGO_URL;
 const path = require("path");
+const { ExpressPeerServer } = require("peer");
+
+const server = http.listen(port, () => {
+  console.log(`running on port ${port}`);
+});
+
+const peerServer = ExpressPeerServer(server, {
+  debug: true,
+});
+app.use("/peer", peerServer);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -23,14 +34,14 @@ app.use(
     secret: "lorem",
     cookie: {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60,
+      maxAge: 1000 * 60 * 6000,
       path: "/",
     },
     resave: true,
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: MONGO_URL,
-      ttl: 1000 * 60 * 60,
+      ttl: 1000 * 60 * 6000,
       autoRemove: "native",
     }),
   })
@@ -44,13 +55,6 @@ app.get("/login", (req, res) => {
     id: req.session.id,
     preferences: [],
   };
-  res.cookie("test", "test", {
-    sameSite: "none",
-    httpOnly: true,
-    secure: true,
-    maxAge: 3600 * 240 * 1000,
-    path: "/",
-  });
   res.status(200).json({ id: req.sessionID });
 });
 app.post("/save-preferences", (req, res) => {
@@ -71,10 +75,6 @@ app.get("/give-me-id", (req, res) => {
 app.get("(/*)?", async (req, res, next) => {
   res.sendFile(path.join(buildPath, "index.html"));
 });
-const server = http.listen(port, () => {
-  console.log(`running on port ${port}`);
-});
-
 const io = require("socket.io")(server, {
   cors: {
     origin: "*",

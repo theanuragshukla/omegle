@@ -8,44 +8,21 @@ import {
   Grid,
   GridItem,
 } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
 
-const io = require("socket.io-client");
-const SERVER = process.env.REACT_APP_SERVER_URL;
-const ChatBox = () => {
-  const navigate = useNavigate();
-  const [uid, setUid] = useState();
+const ChatBox = ({ socket, video = false }) => {
   const [messages, setMessages] = useState([
     { sender: "system", msg: "please wait, connecting..." },
   ]);
   const [inputValue, setInputValue] = useState("");
-  const [socket, setSocket] = useState(null);
   const addMessage = (sender, msg) => {
     setMessages((old) => [...old, { sender, msg }]);
   };
-
-  useEffect(() => {
-    fetch(`/give-me-id`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.status) {
-          setUid(res.uid);
-          setSocket(io("/", { query: `uid=${res.uid}` }));
-        } else {
-          navigate("/");
-        }
-      });
-  }, []);
-
   useEffect(() => {
     // Set up listeners
     if (!socket) return;
     socket.on("connect", () => {
       console.log("Connected to server");
-      socket.emit("pair");
+      if (!video) socket.emit("pair");
     });
 
     socket.on("disconnect", () => {
@@ -105,7 +82,7 @@ const ChatBox = () => {
             </Text>
           ))}
         </VStack>
-      </GridItem>{" "}
+      </GridItem>
       <GridItem>
         <Flex px={4} py={2} gap={2}>
           <Button onClick={() => socket.emit("pair")} colorScheme="blue">
