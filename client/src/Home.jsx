@@ -12,12 +12,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import Preferences from "./Preferences";
 import NavBar from "./NavBar";
-const SERVER = process.env.REACT_APP_SERVER_URL;
-
 function Home() {
+  const SERVER = process.env.REACT_APP_SERVER_URL;
   const navigate = useNavigate();
   useEffect(() => {
-    fetch(`/login`, {
+    fetch(`${SERVER}/login`, {
       credentials: "include",
       method: "GET",
     });
@@ -26,7 +25,7 @@ function Home() {
   const [prefs, setPrefs] = useState([]);
 
   const redirect = (to) => {
-    fetch(`/save-preferences`, {
+    fetch(`${SERVER}/save-preferences`, {
       method: "POST",
       credentials: "include",
       body: JSON.stringify({ preferences: prefs }),

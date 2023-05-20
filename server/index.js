@@ -9,6 +9,9 @@ const cookieParser = require("cookie-parser");
 const chat = require("./io");
 const MongoStore = require("connect-mongo");
 const MONGO_URL = process.env.MONGO_URL;
+const LOCAL = process.env.DEV || false;
+const cors = require("cors");
+//const MONGO_URL = "mongodb://localhost:27017/omegle";
 const path = require("path");
 const { ExpressPeerServer } = require("peer");
 
@@ -19,12 +22,39 @@ const server = http.listen(port, () => {
 const peerServer = ExpressPeerServer(server, {
   debug: true,
 });
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
+    credentials: true,
+  })
+);
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+
 app.use("/peer", peerServer);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
+const localSessionCookieOptions = () => {
+  if (LOCAL) {
+    return {
+      httpOnly: false,
+    };
+  } else {
+    return {};
+  }
+};
 app.use(
   sessions({
     name: "omegleSecretEdition",
@@ -34,14 +64,15 @@ app.use(
     secret: "lorem",
     cookie: {
       httpOnly: true,
-      maxAge: 1000 * 60 * 6000,
+      maxAge: 1000 * 60 * 60,
       path: "/",
+      ...localSessionCookieOptions(),
     },
     resave: true,
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: MONGO_URL,
-      ttl: 1000 * 60 * 6000,
+      ttl: 1000 * 60 * 60,
       autoRemove: "native",
     }),
   })
@@ -72,12 +103,13 @@ app.get("/give-me-id", (req, res) => {
     res.json({ status: false });
   }
 });
-app.get("(/*)?", async (req, res, next) => {
-  res.sendFile(path.join(buildPath, "index.html"));
-});
+//if (!LOCAL)
+//app.get("(/*)?", async (req, res, next) => {
+//res.sendFile(path.join(buildPath, "index.html"));
+//});
 const io = require("socket.io")(server, {
   cors: {
-    origin: "*",
+    origin: "http://localhost:3000",
   },
 });
 

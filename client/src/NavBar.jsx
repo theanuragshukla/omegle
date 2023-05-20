@@ -4,7 +4,7 @@ function NavBar() {
   return (
     <Flex h="60px" bg="blue.500" justify="center" align="center">
       <Heading fontSize="2xl" color="white">
-        Omegle! MMMUT Edition
+        Omegle! Special Edition
       </Heading>
     </Flex>
   );

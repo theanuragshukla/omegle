@@ -4,19 +4,22 @@ import { Grid, GridItem } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 const io = require("socket.io-client");
+const SERVER = process.env.REACT_APP_SERVER_URL;
 
 const Chat = () => {
   const navigate = useNavigate();
   const [socket, setSocket] = useState();
   useEffect(() => {
-    fetch(`/give-me-id`, {
+    fetch(`${SERVER}/give-me-id`, {
       method: "GET",
       credentials: "include",
     })
       .then((res) => res.json())
       .then((res) => {
         if (res.status) {
-          setSocket(io.connect("/", { query: `uid=${res.uid}&video=false` }));
+          setSocket(
+            io.connect(`${SERVER}/`, { query: `uid=${res.uid}&video=false` })
+          );
         } else {
           navigate("/");
         }

@@ -9,7 +9,7 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 
-const ChatBox = ({ socket, video = false }) => {
+const ChatBox = ({ socket, video = false, data }) => {
   const [messages, setMessages] = useState([
     { sender: "system", msg: "please wait, connecting..." },
   ]);
@@ -18,7 +18,6 @@ const ChatBox = ({ socket, video = false }) => {
     setMessages((old) => [...old, { sender, msg }]);
   };
   useEffect(() => {
-    // Set up listeners
     if (!socket) return;
     socket.on("connect", () => {
       console.log("Connected to server");
@@ -46,8 +45,13 @@ const ChatBox = ({ socket, video = false }) => {
     socket.on("enqueue", () => {
       addMessage("system", "waiting for partner to join");
     });
+    socket.on("end-conn", (vid) => {
+      if (video) {
+        data.endConn(vid);
+      }
+    });
+
     return () => {
-      // Disconnect from the server
       socket.disconnect();
     };
   }, [socket]);
@@ -85,7 +89,16 @@ const ChatBox = ({ socket, video = false }) => {
       </GridItem>
       <GridItem>
         <Flex px={4} py={2} gap={2}>
-          <Button onClick={() => socket.emit("pair")} colorScheme="blue">
+          <Button
+            onClick={() => {
+              let peerId = null;
+              if (video && data.peer) {
+                peerId = data.peer.id;
+              }
+              socket.emit("pair", peerId);
+            }}
+            colorScheme="blue"
+          >
             Skip
           </Button>
 

@@ -15,14 +15,20 @@ module.exports = (io) => {
     socket.partner = null;
     console.log("socket connected: ", socket.uid, socket.vid);
 
-    socket.on("pair", () => {
+    socket.on("pair", (id) => {
+      socket.vidid = id;
       if (socket.data.connected && socket.partner) {
-        socket.partner.emit("partner-skipped");
-        socket.partner.data.connected = false;
-        socket.partner.partner = null;
+        const partner = socket.partner;
+        console.log("socket vidid", id);
+        console.log("partner vidid", partner.vidid);
+        partner.emit("end-conn", socket.vidid);
+        partner.emit("partner-skipped");
+        socket.emit("end-conn", partner.vidid);
+        partner.data.connected = false;
+        partner.partner = null;
         socket.partner = null;
       }
-      const partner = socket.vid ? unpaired_vid.poll() : unpaired.poll();
+      partner = socket.vid ? unpaired_vid.poll() : unpaired.poll();
       if (!partner || partner.uid === socket.uid) {
         socket.timestamp = Date.now();
         socket.vid ? unpaired_vid.add(socket) : unpaired.add(socket);
@@ -37,10 +43,7 @@ module.exports = (io) => {
       socket.emit("paired");
       partner.emit("paired");
       if (socket.vid) {
-        partner.emit("vid_paired", socket.uid);
-        socket.emit("vid_paired", partner.uid);
-      } else {
-        console.log("no video", socket.vid);
+        partner.emit("vid_paired", id);
       }
     });
 
@@ -62,7 +65,10 @@ module.exports = (io) => {
           ? unpaired_vid.remove(socket)
           : unpaired.remove(socket);
       } else {
+        if (!socket.partner) return;
         socket.partner.emit("partner-skipped");
+        socket.emit("end-conn", socket.partner.vidid);
+        socket.partner.emit("end-conn", socket.vidid);
         socket.partner.data.connected = false;
       }
     });
