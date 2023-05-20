@@ -103,10 +103,10 @@ app.get("/give-me-id", (req, res) => {
     res.json({ status: false });
   }
 });
-//if (!LOCAL)
-//app.get("(/*)?", async (req, res, next) => {
-//res.sendFile(path.join(buildPath, "index.html"));
-//});
+if (!LOCAL)
+  app.get("(/*)?", async (req, res, next) => {
+    res.sendFile(path.join(buildPath, "index.html"));
+  });
 const io = require("socket.io")(server, {
   cors: {
     origin: "http://localhost:3000",
