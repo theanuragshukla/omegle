@@ -46,8 +46,9 @@ const OmegleVideoChatPage = () => {
   async function peerConnection() {
     return new Peer({
       path: `/peer`,
-      host: "localhost",
-      port: 5000,
+      secure: true,
+      host: "omegle-special-server.onrender.com",
+      port: 443,
       config: {
         iceServers: [
           { url: "stun:stun.l.google.com:19302" },
