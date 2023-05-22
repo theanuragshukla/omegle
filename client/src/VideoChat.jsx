@@ -23,7 +23,8 @@ const OmegleVideoChatPage = () => {
     if (peers) {
       peers.close();
     }
-    stream1.forEach((track) => track.stop);
+    if (stream1) stream1.forEach((track) => track.stop);
+    setStream1(() => null);
   }
 
   const connectToNewUser = async (userId) => {
