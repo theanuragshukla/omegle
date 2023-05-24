@@ -50,12 +50,12 @@ module.exports = (io) => {
     socket.on("msg", (msg) => {
       if (!socket.data.connected || !socket.partner) {
         socket.emit("newMsg", {
-          sender: "system",
+          sender: "Server",
           msg: "You are not connected to Anyone",
         });
         return;
       } else {
-        socket.partner.emit("newMsg", msg);
+        socket.partner.emit("newMsg", { sender: "Server", msg });
       }
     });
     socket.on("disconnect", () => {

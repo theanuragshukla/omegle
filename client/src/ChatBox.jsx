@@ -38,7 +38,7 @@ const ChatBox = ({ socket, video = false, data }) => {
       addMessage("System", "Stranger Skipped you");
     });
 
-    socket.on("newMsg", (msg) => {
+    socket.on("newMsg", ({ sender, msg }) => {
       addMessage("Stranger", msg);
     });
 
