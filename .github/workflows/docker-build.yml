@@ -13,7 +13,8 @@ jobs:
     name: Build & push docker image
     runs-on: ubuntu-latest
     env:
-      IMG_NAME: ${{ github.repository }}
+      IMG_NAME_CLIENT: "omegle"
+      IMG_NAME_SERVER: "omeserver"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -22,11 +23,21 @@ jobs:
         run: |
           echo "github.ref -> {{ github.ref }}"
 
-      - name: Docker metadata
+      - name: Client metadata
         id: metadata
         uses: docker/metadata-action@v3
         with:
-          images: ${{ env.IMG_NAME }}
+          images: ${{ env.IMG_NAME_CLIENT }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+
+      - name: Server metadata
+        id: metadata
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.IMG_NAME_SERVER }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
