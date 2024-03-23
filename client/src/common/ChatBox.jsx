@@ -29,7 +29,7 @@ const ChatBox = ({ socket, video = false, data }) => {
     });
 
     socket.on("paired", () => {
-      console.log(`Paired`);
+      console.log(`Chat Paired`);
       setMessages([{ sender: "System", msg: "Stranger connected" }]);
     });
 

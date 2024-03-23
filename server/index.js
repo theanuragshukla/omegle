@@ -1,19 +1,26 @@
 require("dotenv").config();
 const express = require("express");
+
 const app = express();
-const port = process.env.PORT || 5000;
+
 const http = require("http").Server(app);
 const sessions = require("express-session");
+const cors = require("cors");
 const crypto = require("crypto");
 const cookieParser = require("cookie-parser");
-const chat = require("./io");
 const MongoStore = require("connect-mongo");
+const { ExpressPeerServer } = require("peer");
+
+const chat = require("./io");
+
+const port = process.env.PORT || 5000;
 const MONGO_URL = process.env.MONGO_URL;
 const LOCAL = process.env.DEV || false;
-const cors = require("cors");
-//const MONGO_URL = "mongodb://localhost:27017/omegle";
-const path = require("path");
-const { ExpressPeerServer } = require("peer");
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+const allowed_origins = [
+  "https://warm-united-urchin.ngrok-free.app", 
+  "http://localhost:3000"
+];
 
 const server = http.listen(port, () => {
   console.log(`running on port ${port}`);
@@ -25,13 +32,15 @@ const peerServer = ExpressPeerServer(server, {
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://warm-united-urchin.ngrok-free.app"],
     methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
     credentials: true,
   })
 );
+
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  if(allowed_origins.includes(req.headers.origin))
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
   res.header("Access-Control-Allow-Credentials", true);
   res.header(
     "Access-Control-Allow-Headers",
@@ -44,8 +53,8 @@ app.use("/peer", peerServer);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(cookieParser());
+
 const localSessionCookieOptions = () => {
   if (LOCAL) {
     return {
@@ -55,6 +64,7 @@ const localSessionCookieOptions = () => {
     return {};
   }
 };
+
 app.use(
   sessions({
     name: "omegleSecretEdition",
@@ -69,7 +79,7 @@ app.use(
       ...localSessionCookieOptions(),
     },
     resave: true,
-    saveUninitialized: false,
+    saveUninitialized: true,
     store: MongoStore.create({
       mongoUrl: MONGO_URL,
       ttl: 1000 * 60 * 60,
@@ -78,38 +88,31 @@ app.use(
   })
 );
 
-const buildPath = path.normalize(path.join(__dirname, "./build"));
-app.use(express.static(buildPath));
-
 app.get("/login", (req, res) => {
   req.session.user = {
-    id: req.session.id,
     preferences: [],
   };
-  res.status(200).json({ id: req.sessionID });
+  res.json({ status: true, uid: req.session.id });
 });
 app.post("/save-preferences", (req, res) => {
   const { preferences } = req.body;
   req.session.user = {
-    preferences: preferences,
+    preferences,
   };
-  res.status(200).json({ status: "success" });
+  res.status(200).json({ status: true, msg: "success" });
 });
 
 app.get("/give-me-id", (req, res) => {
-  if (req.session.user) {
-    res.json({ status: true, uid: req.session.id });
+  if (req.session.id) {
+    res.json({ status: true, data: { uid: req.session.id }, msg: "success" });
   } else {
-    res.json({ status: false });
+    res.json({ status: false, msg: "Not logged in" });
   }
 });
-if (!LOCAL)
-  app.get("(/*)?", async (req, res, next) => {
-    res.sendFile(path.join(buildPath, "index.html"));
-  });
+
 const io = require("socket.io")(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: CLIENT_URL,
   },
 });
 

@@ -1,9 +1,16 @@
 import React from "react";
-import 
+import { ChakraProvider, GlobalStyle } from "@chakra-ui/react";
 
-function App(){
-return (
-	<>
-)
+import theme from "./styles/theme";
+import Router from "./Router";
+
+function App() {
+  return (
+    <ChakraProvider theme={theme}>
+      <GlobalStyle />
+      <Router />
+    </ChakraProvider>
+  );
 }
-export default App
+
+export default App;

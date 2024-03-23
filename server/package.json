@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
-    "build": "cd client && npm i && npm run build"
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +20,7 @@
     "fastpriorityqueue": "^0.7.4",
     "mongodb": "^5.3.0",
     "peer": "^1.0.0",
-    "socket.io": "^4.6.1"
+    "socket.io": "^4.6.1",
+    "socket.io-redis": "^6.1.1"
   }
 }

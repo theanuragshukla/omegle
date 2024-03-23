@@ -16,7 +16,7 @@
     "@contentful/rich-text-react-renderer": "^15.16.2",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
-    "axios": "^1.2.2",
+    "axios": "^1.6.8",
     "express-rate-limit": "^6.7.0",
     "fastpriorityqueue": "^0.7.4",
     "formik": "^2.2.9",
