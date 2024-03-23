@@ -24,7 +24,7 @@ jobs:
           echo "github.ref -> {{ github.ref }}"
 
       - name: Client metadata
-        id: metadata
+        id: metadata_client
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.IMG_NAME_CLIENT }}
@@ -34,7 +34,7 @@ jobs:
             type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
       - name: Server metadata
-        id: metadata
+        id: metadata_server
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.IMG_NAME_SERVER }}
@@ -55,8 +55,8 @@ jobs:
           context: client
           file: client/Dockerfile.prod
           push: ${{ github.event.base_ref =='refs/heads/master' && github.ref_type == 'tag' && !startsWith(github.ref, 'refs/tags/v0.')}}
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          tags: ${{ steps.metadata_client.outputs.tags }}
+          labels: ${{ steps.metadata_client.outputs.labels }}
 
       - name: Build and push Server Docker image
         uses: docker/build-push-action@v2
@@ -64,7 +64,7 @@ jobs:
           context: server
           file: server/Dockerfile
           push: ${{ github.event.base_ref =='refs/heads/master' && github.ref_type == 'tag' && !startsWith(github.ref, 'refs/tags/v0.')}}
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          tags: ${{ steps.metadata_server.outputs.tags }}
+          labels: ${{ steps.metadata_server.outputs.labels }}
 
 
