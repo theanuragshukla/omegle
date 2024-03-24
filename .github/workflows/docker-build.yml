@@ -53,9 +53,10 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           build-args: |
-            REACT_APP_SERVER_URL=server
-            REACT_APP_PEER_HOST=server
-            REACT_APP_PEER_PORT=8000
+            REACT_APP_SERVER_URL=https://omeserver.anurags.tech
+            REACT_APP_PEER_HOST=https://omeserver.anurags.tech
+            REACT_APP_PEER_PORT=443
+            REACT_APP_PEER_SECURE=true
 
           context: client
           file: client/Dockerfile.prod
