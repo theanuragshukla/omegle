@@ -14,7 +14,6 @@ module.exports = (io) => {
     socket.isVideo = isVideo === "true";
     socket.uid = uid;
     socket.partner = null;
-    console.log("socket connected: ", socket.uid);
 
     socket.on("pair", (id) => {
       socket.vidid = id;
@@ -58,7 +57,6 @@ module.exports = (io) => {
       }
     });
     socket.on("disconnect", () => {
-      console.log("socket disconnected:", socket.uid);
       if (!socket.data.connected) {
         socket.isVideo === true
           ? unpaired_vid.remove(socket)
@@ -70,10 +68,6 @@ module.exports = (io) => {
         socket.partner.emit("end-conn", socket.vidid);
         socket.partner.data.connected = false;
       }
-    });
-    socket.on("join-room", (roomId, userId) => {
-      socket.join(roomId);
-      socket.to(roomId).emit("user-connected", userId);
     });
   });
 };

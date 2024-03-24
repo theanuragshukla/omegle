@@ -8,7 +8,7 @@ import { getId } from "../data/home";
 const SERVER = process.env.REACT_APP_SERVER_URL;
 const PEER_SERVER = process.env.REACT_APP_PEER_HOST;
 const PEER_PORT = process.env.REACT_APP_PEER_PORT;
-const PEER_SECURE = process.env.REACT_APP_PEER_SECURE;
+const PEER_SECURE = process.env.REACT_APP_PEER_SECURE===true;
 
 const io = require("socket.io-client");
 
@@ -35,7 +35,10 @@ export default function VideoContainer() {
       return;
     }
     const call = await peer.call(userId, stream2);
-    console.log("Call", call);
+    if (!call) {
+      console.log("Call not initialized");
+      return;
+    }
     setPartner((prev) => ({ ...prev, [call.peer]: call }));
     call.on("stream", (remoteStream) => {
       setStream1(remoteStream);
@@ -51,13 +54,18 @@ export default function VideoContainer() {
   async function peerConnection() {
     return new Peer({
       path: `/peer`,
-      secure: PEER_SECURE==="true",
+      secure: PEER_SECURE,
       host: PEER_SERVER,
       port: PEER_PORT,
       config: {
         iceServers: [
           { url: "stun:stun.l.google.com:19302" },
           { url: "stun:stun1.l.google.com:19302" },
+          {
+            url: "turn:numb.viagenie.ca",
+            credential: "muazkh",
+            username: "webrtc@live.com",
+          },
         ],
         heartbeat: {
           interval: 5000,
@@ -81,6 +89,9 @@ export default function VideoContainer() {
 
   useEffect(() => {
     if (!peer) return;
+    if(peer.disconnected) {
+      peer.reconnect();
+    }
     peer.on("call", (call) => {
       call.answer(stream2);
       call.on("stream", (remoteStream) => {
