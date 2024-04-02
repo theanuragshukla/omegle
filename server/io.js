@@ -1,12 +1,8 @@
 module.exports = (io) => {
- // const redisAdapter = require("socket.io-redis");
   const PriorityQueue = require("fastpriorityqueue");
 
   const unpaired = new PriorityQueue((a, b) => a.timestamp < b.timestamp);
   const unpaired_vid = new PriorityQueue((a, b) => a.timestamp < b.timestamp);
-
-
-//  io.adapter(redisAdapter({ host: "localhost", port: 6379 }));
 
   io.on("connection", (socket) => {
     const uid = socket.handshake.query.uid;

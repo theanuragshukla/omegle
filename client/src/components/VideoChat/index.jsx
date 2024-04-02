@@ -1,17 +1,11 @@
-import { Flex, Grid, GridItem, Show } from "@chakra-ui/react";
-import {useRef,  useEffect, useState } from "react";
+import { Flex, Grid, GridItem, Icon, Show } from "@chakra-ui/react";
+import { useRef, useEffect, useState } from "react";
 
 import loader from "../../assets/loading.gif";
 import ChatBox from "../../common/ChatBox";
 import NavBar from "../../common/NavBar";
 
-const VideoChat = ({
-  socket,
-  peer,
-  endConn,
-  stream1,
-  stream2,
-}) => {
+const VideoChat = ({ socket, peer, endConn, stream1, stream2 }) => {
   const [miniVid, setMiniVid] = useState(null);
   const cam1 = useRef();
   const cam2 = useRef();
@@ -45,7 +39,7 @@ const VideoChat = ({
           w="100%"
           h={{ base: "calc(150vh - 60px)", sm: "calc(100vh - 60px)" }}
           bg="white"
-          gridTemplateColumns={{ base: "1fr", sm: "1fr 1fr", md: "auto 1fr" }}
+          gridTemplateColumns={{ base: "1fr", sm: "1fr 1fr", md: "minmax(360px, auto) 1fr" }}
           templateAreas={{
             base: `"cam1" "chat"`,
             sm: `"cam1 cam2" "chat chat"`,
@@ -114,7 +108,7 @@ const VideoChat = ({
                 />
               </Flex>
             </Show>
-            <svg
+            <Icon
               viewBox="0 0 4 3"
               width={{ base: "100%", sm: "auto" }}
               height={{ base: "auto", sm: "100%" }}
@@ -152,7 +146,7 @@ const VideoChat = ({
                 )}
               </Flex>
 
-              <svg viewBox="0 0 4 3" width="auto" height="100%" fill="red" />
+              <Icon viewBox="0 0 4 3" width="auto" height="100%" fill="red" />
             </GridItem>
           </Show>
           <GridItem area="chat" bg="blue.500" overflow="hidden">

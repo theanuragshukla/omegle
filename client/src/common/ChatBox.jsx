@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Flex,
   Input,
@@ -10,12 +10,14 @@ import {
 } from "@chakra-ui/react";
 
 const ChatBox = ({ socket, video = false, data }) => {
+  const msgList = useRef();
   const [messages, setMessages] = useState([
     { sender: "system", msg: "please wait, connecting..." },
   ]);
   const [inputValue, setInputValue] = useState("");
   const addMessage = (sender, msg) => {
     setMessages((old) => [...old, { sender, msg }]);
+    msgList.current.scrollTop = msgList.current.scrollHeight;
   };
   useEffect(() => {
     if (!socket) return;
@@ -58,6 +60,7 @@ const ChatBox = ({ socket, video = false, data }) => {
 
   const handleSend = (e) => {
     if (e.key !== "Enter") return;
+    if (!!!inputValue || inputValue.trim() === "") return;
     addMessage("You", inputValue);
     socket.emit("msg", inputValue);
     setInputValue("");
@@ -67,11 +70,13 @@ const ChatBox = ({ socket, video = false, data }) => {
     <Grid bg="white" h="100%" templateRows="1fr auto" pb={2}>
       <GridItem overflow="scroll">
         <VStack
+          scrollBehavior="smooth"
           alignItems="flex-start"
           justify="flex-end"
           p={4}
           minH="100%"
           overflow="scroll"
+          ref={msgList}
         >
           {messages.map((message, index) => (
             <Text

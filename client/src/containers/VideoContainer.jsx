@@ -72,8 +72,6 @@ export default function VideoContainer() {
           timeout: 15000,
         },
       },
-
-      debug: 3,
     });
   }
   const getSocket = async (uid) => {
