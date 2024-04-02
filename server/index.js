@@ -18,8 +18,9 @@ const MONGO_URL = process.env.MONGO_URL;
 const LOCAL = process.env.DEV || false;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 const allowed_origins = [
-  "https://warm-united-urchin.ngrok-free.app", 
-  "http://localhost:3000"
+  CLIENT_URL,
+  "https://warm-united-urchin.ngrok-free.app",
+  "http://localhost:3000",
 ];
 
 const server = http.listen(port, () => {
@@ -32,15 +33,15 @@ const peerServer = ExpressPeerServer(server, {
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://warm-united-urchin.ngrok-free.app"],
+    origin: allowed_origins,
     methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
     credentials: true,
   })
 );
 
 app.use((req, res, next) => {
-  if(allowed_origins.includes(req.headers.origin))
-  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  if (allowed_origins.includes(req.headers.origin))
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
   res.header("Access-Control-Allow-Credentials", true);
   res.header(
     "Access-Control-Allow-Headers",
@@ -112,7 +113,7 @@ app.get("/give-me-id", (req, res) => {
 
 const io = require("socket.io")(server, {
   cors: {
-    origin: CLIENT_URL,
+    origin: allowed_origins,
   },
 });
 

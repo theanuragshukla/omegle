@@ -8,7 +8,7 @@ import { getId } from "../data/home";
 const SERVER = process.env.REACT_APP_SERVER_URL;
 const PEER_SERVER = process.env.REACT_APP_PEER_HOST;
 const PEER_PORT = process.env.REACT_APP_PEER_PORT;
-const PEER_SECURE = process.env.REACT_APP_PEER_SECURE===true;
+const PEER_SECURE = process.env.REACT_APP_PEER_SECURE==="true";
 
 const io = require("socket.io-client");
 
